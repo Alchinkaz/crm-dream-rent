@@ -1,0 +1,282 @@
+import { supabase } from './supabase'
+import type { CustomField, FieldGroup, KanbanStage } from "./types/crm-fields"
+
+// Default field groups
+export const DEFAULT_FIELD_GROUPS: FieldGroup[] = [
+  { id: "basic", name: "Основное", order: 0 },
+  { id: "stats", name: "Статистика", order: 1 },
+]
+
+// Default custom fields
+export const DEFAULT_CUSTOM_FIELDS: CustomField[] = [
+  { id: "budget", name: "Бюджет сделки", type: "number", required: true, groupId: "basic" },
+  { id: "brief", name: "Бриф", type: "text", required: false, groupId: "basic" },
+  { id: "kp", name: "КП", type: "text", required: true, groupId: "basic" },
+  {
+    id: "objections",
+    name: "Возражения",
+    type: "list",
+    required: false,
+    options: ["Цена", "Качество", "Сроки"],
+    groupId: "basic",
+  },
+  { id: "requisites", name: "Реквизиты", type: "text", required: false, groupId: "basic" },
+  { id: "invoice", name: "Счет", type: "text", required: false, groupId: "basic" },
+  {
+    id: "rejection-reason",
+    name: "Причины отказа",
+    type: "list",
+    required: false,
+    options: ["Дорого", "Не подходит", "Нашли другого", "Передумали", "Не отвечает", "Другое"],
+    groupId: "basic",
+  },
+]
+
+// Default stages
+export const DEFAULT_STAGES: KanbanStage[] = [
+  { id: "new", name: "Новая заявка", color: "#64748b", order: 0 },
+  { id: "in-work", name: "Принято в работу", color: "#3b82f6", order: 1 },
+  { id: "qualified", name: "Квалификация пройдена", color: "#06b6d4", order: 2 },
+  { id: "proposal-sent", name: "Предложение отправлено", color: "#a855f7", order: 3 },
+  { id: "prepaid", name: "Предоплата получена", color: "#6366f1", order: 4 },
+  { id: "confirmed", name: "Бронь подтверждена", color: "#22c55e", order: 5 },
+  { id: "issued", name: "Мопед выдан", color: "#10b981", order: 6 },
+  { id: "inspection-scheduled", name: "Осмотр назначен", color: "#14b8a6", order: 7 },
+  { id: "inspection-overdue", name: "Осмотр просрочен", color: "#f97316", order: 8 },
+  { id: "inspection-done", name: "Осмотр проведен", color: "#84cc16", order: 9 },
+  { id: "extended", name: "Аренда продлена", color: "#8b5cf6", order: 10 },
+  { id: "overdue", name: "Аренда просрочена", color: "#ef4444", order: 11 },
+  { id: "incident", name: "ЧП", color: "#dc2626", order: 12 },
+  { id: "returned", name: "Мопед возвращен", color: "#0ea5e9", order: 13 },
+  { id: "completed", name: "Аренда завершена", color: "#6b7280", order: 14 },
+]
+
+// Map database to CustomField
+function mapDbToCustomField(dbField: any): CustomField {
+  return {
+    id: dbField.id,
+    name: dbField.name,
+    type: dbField.type,
+    required: dbField.required,
+    options: dbField.options,
+    groupId: dbField.group_id,
+  }
+}
+
+// Map CustomField to database
+function mapCustomFieldToDb(field: CustomField): any {
+  return {
+    id: field.id,
+    name: field.name,
+    type: field.type,
+    required: field.required,
+    options: field.options,
+    group_id: field.groupId,
+  }
+}
+
+// Map database to FieldGroup
+function mapDbToFieldGroup(dbGroup: any): FieldGroup {
+  return {
+    id: dbGroup.id,
+    name: dbGroup.name,
+    order: dbGroup.order_num,
+  }
+}
+
+// Map FieldGroup to database
+function mapFieldGroupToDb(group: FieldGroup): any {
+  return {
+    id: group.id,
+    name: group.name,
+    order_num: group.order,
+  }
+}
+
+// Map database to KanbanStage
+function mapDbToKanbanStage(dbStage: any): KanbanStage {
+  return {
+    id: dbStage.id,
+    name: dbStage.name,
+    color: dbStage.color,
+    order: dbStage.order_num,
+  }
+}
+
+// Map KanbanStage to database
+function mapKanbanStageToDb(stage: KanbanStage): any {
+  return {
+    id: stage.id,
+    name: stage.name,
+    color: stage.color,
+    order_num: stage.order,
+  }
+}
+
+// Kanban Stages Functions
+export async function getKanbanStages(): Promise<KanbanStage[]> {
+  try {
+    const { data, error } = await supabase
+      .from('kanban_stages')
+      .select('*')
+      .order('order_num', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching kanban stages:', error)
+      return []
+    }
+
+    // If no stages in database, initialize with default stages once
+    if (!data || data.length === 0) {
+      // Insert default stages
+      const dbStages = DEFAULT_STAGES.map(mapKanbanStageToDb)
+      const { error: insertError } = await supabase
+        .from('kanban_stages')
+        .insert(dbStages)
+
+      if (insertError) {
+        console.error('Error initializing default stages:', insertError)
+        return []
+      }
+
+      // Return default stages after insertion
+      return DEFAULT_STAGES
+    }
+
+    return data.map(mapDbToKanbanStage)
+  } catch (error) {
+    console.error('Error fetching kanban stages:', error)
+    return []
+  }
+}
+
+export async function saveKanbanStages(stages: KanbanStage[]): Promise<void> {
+  try {
+    // Get existing stages from database
+    const { data: existingStages } = await supabase
+      .from('kanban_stages')
+      .select('id')
+
+    const existingIds = existingStages?.map(s => s.id) || []
+    const newIds = stages.map(s => s.id)
+
+    // Delete stages that are not in the new list
+    const idsToDelete = existingIds.filter(id => !newIds.includes(id))
+    if (idsToDelete.length > 0) {
+      // First, update deals that reference deleted stages to use a default stage
+      const defaultStageId = newIds[0] || 'new'
+      await supabase
+        .from('deals')
+        .update({ stage: defaultStageId })
+        .in('stage', idsToDelete)
+
+      // Then delete the stages
+      const { error: deleteError } = await supabase
+        .from('kanban_stages')
+        .delete()
+        .in('id', idsToDelete)
+
+      if (deleteError) {
+        console.error('Error deleting kanban stages:', deleteError)
+      }
+    }
+
+    // Upsert (insert or update) all stages
+    const dbStages = stages.map(mapKanbanStageToDb)
+    for (const stage of dbStages) {
+      const { error } = await supabase
+        .from('kanban_stages')
+        .upsert(stage, { onConflict: 'id' })
+
+      if (error) {
+        console.error(`Error upserting stage ${stage.id}:`, error)
+      }
+    }
+  } catch (error) {
+    console.error('Error saving kanban stages:', error)
+  }
+}
+
+// Custom Fields Functions
+export async function getCustomFields(): Promise<CustomField[]> {
+  try {
+    const { data, error } = await supabase
+      .from('kanban_custom_fields')
+      .select('*')
+      .order('id', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching custom fields:', error)
+      return DEFAULT_CUSTOM_FIELDS
+    }
+
+    if (!data || data.length === 0) {
+      return DEFAULT_CUSTOM_FIELDS
+    }
+
+    return data.map(mapDbToCustomField)
+  } catch (error) {
+    console.error('Error fetching custom fields:', error)
+    return DEFAULT_CUSTOM_FIELDS
+  }
+}
+
+export async function saveCustomFields(fields: CustomField[]): Promise<void> {
+  try {
+    // Delete all existing fields and insert new ones
+    await supabase.from('kanban_custom_fields').delete().neq('id', '')
+
+    const dbFields = fields.map(mapCustomFieldToDb)
+    const { error } = await supabase
+      .from('kanban_custom_fields')
+      .insert(dbFields)
+
+    if (error) {
+      console.error('Error saving custom fields:', error)
+    }
+  } catch (error) {
+    console.error('Error saving custom fields:', error)
+  }
+}
+
+// Field Groups Functions
+export async function getFieldGroups(): Promise<FieldGroup[]> {
+  try {
+    const { data, error } = await supabase
+      .from('kanban_field_groups')
+      .select('*')
+      .order('order_num', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching field groups:', error)
+      return DEFAULT_FIELD_GROUPS
+    }
+
+    if (!data || data.length === 0) {
+      return DEFAULT_FIELD_GROUPS
+    }
+
+    return data.map(mapDbToFieldGroup)
+  } catch (error) {
+    console.error('Error fetching field groups:', error)
+    return DEFAULT_FIELD_GROUPS
+  }
+}
+
+export async function saveFieldGroups(groups: FieldGroup[]): Promise<void> {
+  try {
+    // Delete all existing groups and insert new ones
+    await supabase.from('kanban_field_groups').delete().neq('id', '')
+
+    const dbGroups = groups.map(mapFieldGroupToDb)
+    const { error } = await supabase
+      .from('kanban_field_groups')
+      .insert(dbGroups)
+
+    if (error) {
+      console.error('Error saving field groups:', error)
+    }
+  } catch (error) {
+    console.error('Error saving field groups:', error)
+  }
+}
