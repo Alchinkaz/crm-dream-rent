@@ -7,13 +7,13 @@ export type Moped = {
   licensePlate: string
   photo?: string
   status: "available" | "rented" | "maintenance"
-  grnz?: string
-  vinCode?: string
-  color?: string
-  mileage?: number | string
-  condition?: "new" | "good" | "broken"
-  insuranceDate?: string
-  techInspectionDate?: string
+  grnz?: string | null
+  vinCode?: string | null
+  color?: string | null
+  mileage?: number | string | null
+  condition?: "new" | "good" | "broken" | null
+  insuranceDate?: string | null
+  techInspectionDate?: string | null
   createdAt: string
 }
 
@@ -42,6 +42,28 @@ function mapDbToMoped(dbMoped: any): Moped {
   }
 }
 
+function normalizeText(value: string | null | undefined) {
+  if (value === undefined) return undefined
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : null
+}
+
+function normalizeDate(value: string | null | undefined) {
+  if (value === undefined) return undefined
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : null
+}
+
+function normalizeMileage(value: number | string | null | undefined) {
+  if (value === undefined) return undefined
+  if (value === null) return null
+  if (typeof value === "number") return isNaN(value) ? null : value
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  const parsed = Number(trimmed.replace(/[^0-9.]/g, ""))
+  return isNaN(parsed) ? null : parsed
+}
+
 // Map our type to database column names
 function mapMopedToDb(moped: Partial<Moped>): any {
   const dbMoped: any = {}
@@ -50,13 +72,13 @@ function mapMopedToDb(moped: Partial<Moped>): any {
   if (moped.licensePlate !== undefined) dbMoped.license_plate = moped.licensePlate
   if (moped.photo !== undefined) dbMoped.photo = moped.photo
   if (moped.status !== undefined) dbMoped.status = moped.status
-  if (moped.grnz !== undefined) dbMoped.grnz = moped.grnz
-  if (moped.vinCode !== undefined) dbMoped.vin_code = moped.vinCode
-  if (moped.color !== undefined) dbMoped.color = moped.color
-  if (moped.mileage !== undefined) dbMoped.mileage = moped.mileage
-  if (moped.condition !== undefined) dbMoped.condition = moped.condition
-  if (moped.insuranceDate !== undefined) dbMoped.insurance_date = moped.insuranceDate
-  if (moped.techInspectionDate !== undefined) dbMoped.tech_inspection_date = moped.techInspectionDate
+  if (moped.grnz !== undefined) dbMoped.grnz = normalizeText(moped.grnz ?? null)
+  if (moped.vinCode !== undefined) dbMoped.vin_code = normalizeText(moped.vinCode ?? null)
+  if (moped.color !== undefined) dbMoped.color = normalizeText(moped.color ?? null)
+  if (moped.mileage !== undefined) dbMoped.mileage = normalizeMileage(moped.mileage)
+  if (moped.condition !== undefined) dbMoped.condition = moped.condition || null
+  if (moped.insuranceDate !== undefined) dbMoped.insurance_date = normalizeDate(moped.insuranceDate)
+  if (moped.techInspectionDate !== undefined) dbMoped.tech_inspection_date = normalizeDate(moped.techInspectionDate)
   return dbMoped
 }
 

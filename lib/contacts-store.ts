@@ -6,12 +6,12 @@ export type Contact = {
   id: string
   name: string
   phone: string
-  email?: string
-  iin?: string
-  docNumber?: string
+  email?: string | null
+  iin?: string | null
+  docNumber?: string | null
   status?: string
-  photo?: string
-  emergencyContactId?: string
+  photo?: string | null
+  emergencyContactId?: string | null
   createdAt: string
 }
 
@@ -36,13 +36,23 @@ function mapContactToDb(contact: Partial<Contact>): any {
   const dbContact: any = {}
   if (contact.name !== undefined) dbContact.name = contact.name
   if (contact.phone !== undefined) dbContact.phone = contact.phone
-  if (contact.email !== undefined) dbContact.email = contact.email
-  if (contact.iin !== undefined) dbContact.iin = contact.iin
-  if (contact.docNumber !== undefined) dbContact.doc_number = contact.docNumber
+  if (contact.email !== undefined) dbContact.email = normalizeOptionalText(contact.email)
+  if (contact.iin !== undefined) dbContact.iin = normalizeOptionalText(contact.iin)
+  if (contact.docNumber !== undefined) dbContact.doc_number = normalizeOptionalText(contact.docNumber)
   if (contact.status !== undefined) dbContact.status = contact.status
-  if (contact.photo !== undefined) dbContact.photo = contact.photo
-  if (contact.emergencyContactId !== undefined) dbContact.emergency_contact_id = contact.emergencyContactId
+  if (contact.photo !== undefined) dbContact.photo = normalizeOptionalText(contact.photo)
+  if (contact.emergencyContactId !== undefined) {
+    const value =
+      contact.emergencyContactId && contact.emergencyContactId.trim() !== "" ? contact.emergencyContactId : null
+    dbContact.emergency_contact_id = value
+  }
   return dbContact
+}
+
+function normalizeOptionalText(value?: string | null) {
+  if (value === undefined) return undefined
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : null
 }
 
 export async function getContacts(): Promise<Contact[]> {
