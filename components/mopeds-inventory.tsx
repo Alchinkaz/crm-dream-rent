@@ -608,10 +608,10 @@ function MopedDetailModal({
               </div>
 
               <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
-                <div className="text-sm text-muted-foreground">ГРНЗ</div>
+                <div className="text-sm text-muted-foreground">№ Тех паспорта</div>
                 <div>
                   <Input
-                    placeholder="ГРНЗ"
+                    placeholder="№ Тех паспорта"
                     value={formData.grnz}
                     onChange={(e) => setFormData({ ...formData, grnz: e.target.value })}
                     className="border-none shadow-none h-8 focus-visible:ring-0 px-0"
