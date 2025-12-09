@@ -238,14 +238,13 @@ export function MopedsInventory() {
             className="pl-9"
           />
         </div>
-        {canEdit && (
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={handleOpenAddDialog}>
-                <IconPlus className="size-4 mr-2" />
-                Добавить мопед
-              </Button>
-            </DialogTrigger>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">
+              <IconFilter className="size-4 mr-2" />
+              Фильтры
+            </Button>
+          </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>Статус</DropdownMenuLabel>
             <DropdownMenuCheckboxItem
@@ -288,24 +287,26 @@ export function MopedsInventory() {
             </DropdownMenuCheckboxItem>
           </DropdownMenuContent>
         </DropdownMenu>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={handleOpenAddDialog}>
-              <IconPlus className="size-4 mr-2" />
-              Добавить мопед
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="!max-w-4xl w-[85vw] max-h-[95vh] h-[95vh] overflow-hidden flex flex-col p-0">
-            <MopedDetailModal
-              moped={null}
-              formData={addFormData}
-              setFormData={setAddFormData}
-              onSave={handleSaveAdd}
-              onDelete={undefined}
-              onClose={() => setIsDialogOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
+        {canEdit && (
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogTrigger asChild>
+              <Button onClick={handleOpenAddDialog}>
+                <IconPlus className="size-4 mr-2" />
+                Добавить мопед
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="!max-w-4xl w-[85vw] max-h-[95vh] h-[95vh] overflow-hidden flex flex-col p-0">
+              <MopedDetailModal
+                moped={null}
+                formData={addFormData}
+                setFormData={setAddFormData}
+                onSave={handleSaveAdd}
+                onDelete={undefined}
+                onClose={() => setIsDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
       </div>
 
       <div className="space-y-3">
