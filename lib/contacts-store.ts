@@ -13,6 +13,7 @@ export type Contact = {
   photo?: string | null
   emergencyContactId?: string | null
   createdAt: string
+  createdBy?: string // Имя пользователя, который создал запись
 }
 
 const CACHE_KEY = 'crm_contacts_cache'
@@ -73,6 +74,7 @@ function mapDbToContact(dbContact: any): Contact {
     photo: dbContact.photo,
     emergencyContactId: dbContact.emergency_contact_id,
     createdAt: dbContact.created_at,
+    createdBy: dbContact.created_by,
   }
 }
 
@@ -91,6 +93,7 @@ function mapContactToDb(contact: Partial<Contact>): any {
       contact.emergencyContactId && contact.emergencyContactId.trim() !== "" ? contact.emergencyContactId : null
     dbContact.emergency_contact_id = value
   }
+  if (contact.createdBy !== undefined) dbContact.created_by = contact.createdBy
   return dbContact
 }
 

@@ -39,7 +39,7 @@ const CONDITION_LABELS = {
 }
 
 export function MopedsInventory() {
-  const { hasTabAccess } = useAuth()
+  const { hasTabAccess, username } = useAuth()
   const canEdit = hasTabAccess("mopeds", "inventory", "edit")
   
   const [mopeds, setMopeds] = React.useState<Moped[]>([])
@@ -190,7 +190,7 @@ export function MopedsInventory() {
       return
     }
 
-    const newMoped = await addMoped(addFormData)
+    const newMoped = await addMoped({ ...addFormData, createdBy: username || undefined })
     if (newMoped) {
       const loadedMopeds = await getMopeds()
       setMopeds(loadedMopeds)
@@ -346,6 +346,7 @@ export function MopedsInventory() {
                 </div>
                 <p className="text-sm text-muted-foreground">
                   Гос. номер: {moped.licensePlate} • Добавлен: {new Date(moped.createdAt).toLocaleDateString("ru-RU")}
+                  {moped.createdBy && ` • Создано: ${moped.createdBy}`}
                 </p>
               </div>
               <div className="flex items-center gap-2">

@@ -208,7 +208,7 @@ function KanbanColumn({
 export function MopedsContent() {
   const pathname = usePathname()
   const router = useRouter()
-  const { hasTabAccess } = useAuth()
+  const { hasTabAccess, username } = useAuth()
   
   // Определяем активную вкладку из URL
   const getActiveTab = (): "rentals" | "inventory" | "contacts" | null => {
@@ -564,7 +564,9 @@ export function MopedsContent() {
     let savedDeal: DealWithFields | null = null
 
     if (updatedDeal.id.startsWith("temp-")) {
-      savedDeal = await createDeal(updatedDeal)
+      // При создании новой сделки добавляем информацию о создателе
+      const dealWithCreator = { ...updatedDeal, createdBy: username || undefined }
+      savedDeal = await createDeal(dealWithCreator)
     } else {
       savedDeal = await updateDeal(updatedDeal.id, updatedDeal)
     }
@@ -635,7 +637,7 @@ export function MopedsContent() {
     if (editingContact) {
       await updateContact(editingContact.id, contactData)
     } else {
-      await addContact(contactData)
+      await addContact({ ...contactData, createdBy: username || undefined })
     }
 
     const loadedContacts = await getContacts()
@@ -670,7 +672,7 @@ export function MopedsContent() {
       return
     }
 
-    const newContact = await addContact(addContactFormData)
+    const newContact = await addContact({ ...addContactFormData, createdBy: username || undefined })
     if (newContact) {
       const loadedContacts = await getContacts()
       setContacts(loadedContacts)

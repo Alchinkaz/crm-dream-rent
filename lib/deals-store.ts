@@ -83,6 +83,7 @@ function mapDbToDeal(dbDeal: any): DealWithFields {
     customFields: dbDeal.custom_fields,
     comment: dbDeal.comment,
     createdAt: dbDeal.created_at,
+    createdBy: dbDeal.created_by,
   }
 }
 
@@ -121,6 +122,7 @@ function mapDealToDb(deal: Partial<DealWithFields>): any {
   if (deal.tasks !== undefined) dbDeal.tasks = deal.tasks
   if (deal.customFields !== undefined) dbDeal.custom_fields = deal.customFields
   if (deal.comment !== undefined) dbDeal.comment = deal.comment
+  if (deal.createdBy !== undefined) dbDeal.created_by = deal.createdBy
   return dbDeal
 }
 

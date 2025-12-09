@@ -15,6 +15,7 @@ export type Moped = {
   insuranceDate?: string | null
   techInspectionDate?: string | null
   createdAt: string
+  createdBy?: string // Имя пользователя, который создал запись
 }
 
 const CACHE_KEY = 'crm_mopeds_cache'
@@ -85,6 +86,7 @@ function mapDbToMoped(dbMoped: any): Moped {
     insuranceDate: dbMoped.insurance_date,
     techInspectionDate: dbMoped.tech_inspection_date,
     createdAt: dbMoped.created_at,
+    createdBy: dbMoped.created_by,
   }
 }
 
@@ -125,6 +127,7 @@ function mapMopedToDb(moped: Partial<Moped>): any {
   if (moped.condition !== undefined) dbMoped.condition = moped.condition || null
   if (moped.insuranceDate !== undefined) dbMoped.insurance_date = normalizeDate(moped.insuranceDate)
   if (moped.techInspectionDate !== undefined) dbMoped.tech_inspection_date = normalizeDate(moped.techInspectionDate)
+  if (moped.createdBy !== undefined) dbMoped.created_by = moped.createdBy
   return dbMoped
 }
 

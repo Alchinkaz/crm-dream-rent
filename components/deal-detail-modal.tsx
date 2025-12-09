@@ -422,6 +422,7 @@ export function DealDetailModal({
         iin: editedDeal.contactIIN,
         docNumber: editedDeal.contactDocNumber,
         status: editedDeal.contactStatus,
+        createdBy: username || undefined,
       })
       if (newContact) {
         setSavedContact(newContact)
@@ -468,6 +469,7 @@ export function DealDetailModal({
         iin: editedDeal.emergencyContactIIN,
         docNumber: editedDeal.emergencyContactDocNumber,
         status: editedDeal.emergencyContactStatus,
+        createdBy: username || undefined,
       })
       if (newContact) {
         setSavedEmergencyContact(newContact)

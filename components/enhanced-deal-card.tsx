@@ -2,7 +2,7 @@
 
 import { Card, CardHeader } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { IconCalendar, IconScooter } from "@tabler/icons-react"
+import { IconCalendar, IconScooter, IconUser } from "@tabler/icons-react"
 import type { DealWithFields } from "@/lib/types/crm-fields"
 import { useAuth } from "@/lib/auth"
 import React from "react"
@@ -113,7 +113,7 @@ export function EnhancedDealCard({ deal, onClick, mopedMap }: EnhancedDealCardPr
 
       <div className="border-t mt-1" />
 
-      <div className="px-6 py-0.5">
+      <div className="px-6 py-2 space-y-1">
         {(deal.dateStart || deal.dateEnd) && (
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             <IconCalendar className="size-3.5 flex-shrink-0" />
@@ -122,6 +122,12 @@ export function EnhancedDealCard({ deal, onClick, mopedMap }: EnhancedDealCardPr
               {deal.dateStart && deal.dateEnd && " — "}
               {deal.dateEnd && formatDate(deal.dateEnd)}
             </span>
+          </div>
+        )}
+        {deal.createdBy && (
+          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+            <IconUser className="size-3.5 flex-shrink-0" />
+            <span>Создано: {deal.createdBy}</span>
           </div>
         )}
       </div>

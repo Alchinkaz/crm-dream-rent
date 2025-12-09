@@ -55,6 +55,7 @@ export type DealWithFields = {
   tasks?: { completed: number; total: number }
   customFields?: FieldValue[]
   comment?: string
+  createdBy?: string // Имя пользователя, который создал запись
 }
 
 export type KanbanStage = {
