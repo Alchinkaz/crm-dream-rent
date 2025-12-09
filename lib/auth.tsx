@@ -100,15 +100,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const username = useMemo(() => user?.name || user?.email || null, [user])
-  const isAdmin = useMemo(() => {
-    const role = user?.role || ""
-    const result = role.toLowerCase() === "admin"
-    // Отладка (можно убрать после проверки)
-    if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
-      console.log("[Auth] User role check:", { role, result, user: user?.email })
-    }
-    return result
-  }, [user])
+  const isAdmin = useMemo(() => (user?.role || "").toLowerCase() === "admin", [user])
 
   if (isLoading) {
     return <div className="flex h-screen items-center justify-center">Загрузка...</div>

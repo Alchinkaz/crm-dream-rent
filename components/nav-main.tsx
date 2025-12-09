@@ -1,7 +1,8 @@
 "use client"
 
 import type { Icon } from "@tabler/icons-react"
-import { useNavigation } from "@/hooks/use-navigation"
+import { usePathname } from "next/navigation"
+import Link from "next/link"
 
 import {
   SidebarGroup,
@@ -20,21 +21,22 @@ export function NavMain({
     icon?: Icon
   }[]
 }) {
-  const { currentPage, setCurrentPage } = useNavigation()
+  const pathname = usePathname()
 
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
           {items.map((item) => {
-            const pageName = item.url === "/" ? "Home" : item.url.replace("/", "")
-            const isActive = currentPage === pageName
+            const isActive = pathname === item.url || (item.url === "/" && pathname === "/")
 
             return (
               <SidebarMenuItem key={item.title}>
-                <SidebarMenuButton tooltip={item.title} isActive={isActive} onClick={() => setCurrentPage(pageName)}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
+                <SidebarMenuButton tooltip={item.title} isActive={isActive} asChild>
+                  <Link href={item.url}>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             )
