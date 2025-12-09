@@ -17,7 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { getMopeds, addMoped, updateMoped, deleteMoped, type Moped } from "@/lib/mopeds-store"
+import { getMopeds, addMoped, updateMoped, deleteMoped, getCachedMopeds, type Moped } from "@/lib/mopeds-store"
 import { useAuth } from "@/lib/auth"
 
 const STATUS_LABELS = {
@@ -83,6 +83,13 @@ export function MopedsInventory() {
   })
 
   React.useEffect(() => {
+    // Сначала проверяем кэш - если данные есть, устанавливаем их сразу без loading
+    const cached = getCachedMopeds()
+    if (cached && cached.length > 0) {
+      setMopeds(cached)
+    }
+    
+    // Затем загружаем свежие данные в фоне
     const loadMopeds = async () => {
       try {
         const loadedMopeds = await getMopeds()

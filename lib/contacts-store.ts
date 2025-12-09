@@ -20,7 +20,7 @@ const CACHE_TIMESTAMP_KEY = 'crm_contacts_cache_timestamp'
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 минут
 
 // Функции для работы с localStorage кэшем
-function getCachedContacts(): Contact[] | null {
+export function getCachedContacts(): Contact[] | null {
   if (typeof window === 'undefined') return null
   
   try {

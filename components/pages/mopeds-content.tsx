@@ -53,17 +53,20 @@ import { FieldConfigurationDialog } from "@/components/field-configuration-dialo
 import type { DealWithFields, KanbanStage, CustomField, FieldGroup } from "@/lib/types/crm-fields"
 import {
   getKanbanStages,
+  getCachedStages,
   saveKanbanStages,
   getCustomFields,
+  getCachedFields,
   saveCustomFields,
   getFieldGroups,
+  getCachedGroups,
   saveFieldGroups,
 } from "@/lib/crm-fields-store"
 import { MopedsInventory } from "@/components/mopeds-inventory"
-import { getMopeds, type Moped } from "@/lib/mopeds-store"
-import { getContacts, addContact, updateContact, deleteContact, type Contact } from "@/lib/contacts-store"
+import { getMopeds, getCachedMopeds, type Moped } from "@/lib/mopeds-store"
+import { getContacts, getCachedContacts, addContact, updateContact, deleteContact, type Contact } from "@/lib/contacts-store"
 import { useToast } from "@/hooks/use-toast"
-import { getDeals, createDeal, updateDeal, deleteDeal } from "@/lib/deals-store"
+import { getDeals, getCachedDeals, createDeal, updateDeal, deleteDeal } from "@/lib/deals-store"
 import { supabase } from "@/lib/supabase"
 
 // Define the missing constants
@@ -297,8 +300,47 @@ export function MopedsContent() {
   const { toast } = useToast()
 
   React.useEffect(() => {
-    const loadData = async () => {
+    // Сначала проверяем кэш - если данные есть, устанавливаем их сразу без loading
+    const cachedStages = getCachedStages()
+    const cachedFields = getCachedFields()
+    const cachedGroups = getCachedGroups()
+    const cachedDeals = getCachedDeals()
+    const cachedMopeds = getCachedMopeds()
+    const cachedContacts = getCachedContacts()
+    
+    let hasCachedData = false
+    if (cachedStages && cachedStages.length > 0) {
+      setStages(cachedStages)
+      hasCachedData = true
+    }
+    if (cachedFields && cachedFields.length > 0) {
+      setCustomFields(cachedFields)
+      hasCachedData = true
+    }
+    if (cachedGroups && cachedGroups.length > 0) {
+      setFieldGroups(cachedGroups)
+      hasCachedData = true
+    }
+    if (cachedDeals && cachedDeals.length > 0) {
+      setDeals(cachedDeals)
+      hasCachedData = true
+    }
+    if (cachedMopeds && cachedMopeds.length > 0) {
+      setMopeds(cachedMopeds)
+      hasCachedData = true
+    }
+    if (cachedContacts && cachedContacts.length > 0) {
+      setContacts(cachedContacts)
+      hasCachedData = true
+    }
+    
+    // Если нет кэшированных данных, показываем loading
+    if (!hasCachedData) {
       setLoading(true)
+    }
+    
+    // Затем загружаем свежие данные в фоне
+    const loadData = async () => {
       try {
         const [loadedStages, loadedFields, loadedGroups, loadedDeals] = await Promise.all([
           getKanbanStages(),

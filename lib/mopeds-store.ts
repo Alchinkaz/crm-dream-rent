@@ -27,7 +27,7 @@ let mopedCacheTimestamp = 0
 const MOPED_CACHE_TTL_MS = 60_000
 
 // Функции для работы с localStorage кэшем
-function getCachedMopeds(): Moped[] | null {
+export function getCachedMopeds(): Moped[] | null {
   if (typeof window === 'undefined') return null
   
   try {

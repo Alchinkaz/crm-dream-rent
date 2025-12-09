@@ -10,7 +10,7 @@ const GROUPS_CACHE_TIMESTAMP_KEY = 'crm_groups_cache_timestamp'
 const CACHE_TTL_MS = 10 * 60 * 1000 // 10 минут (эти данные меняются реже)
 
 // Функции для работы с localStorage кэшем
-function getCachedStages(): KanbanStage[] | null {
+export function getCachedStages(): KanbanStage[] | null {
   if (typeof window === 'undefined') return null
   try {
     const cached = localStorage.getItem(STAGES_CACHE_KEY)
@@ -45,7 +45,7 @@ function clearStagesCache(): void {
   localStorage.removeItem(STAGES_CACHE_TIMESTAMP_KEY)
 }
 
-function getCachedFields(): CustomField[] | null {
+export function getCachedFields(): CustomField[] | null {
   if (typeof window === 'undefined') return null
   try {
     const cached = localStorage.getItem(FIELDS_CACHE_KEY)
@@ -80,7 +80,7 @@ function clearFieldsCache(): void {
   localStorage.removeItem(FIELDS_CACHE_TIMESTAMP_KEY)
 }
 
-function getCachedGroups(): FieldGroup[] | null {
+export function getCachedGroups(): FieldGroup[] | null {
   if (typeof window === 'undefined') return null
   try {
     const cached = localStorage.getItem(GROUPS_CACHE_KEY)

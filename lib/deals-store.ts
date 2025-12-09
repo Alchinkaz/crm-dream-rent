@@ -6,7 +6,7 @@ const CACHE_TIMESTAMP_KEY = 'crm_deals_cache_timestamp'
 const CACHE_TTL_MS = 5 * 60 * 1000 // 5 минут
 
 // Функции для работы с localStorage кэшем
-function getCachedDeals(): DealWithFields[] | null {
+export function getCachedDeals(): DealWithFields[] | null {
   if (typeof window === 'undefined') return null
   
   try {
