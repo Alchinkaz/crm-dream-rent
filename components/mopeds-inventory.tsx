@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { getMopeds, addMoped, updateMoped, deleteMoped, getCachedMopeds, type Moped } from "@/lib/mopeds-store"
 import { useAuth } from "@/lib/auth"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 const STATUS_LABELS = {
   available: "Доступен",
@@ -40,6 +41,7 @@ const CONDITION_LABELS = {
 
 export function MopedsInventory() {
   const { hasTabAccess, username } = useAuth()
+  const isMobile = useIsMobile()
   const canEdit = hasTabAccess("mopeds", "inventory", "edit")
   
   const [mopeds, setMopeds] = React.useState<Moped[]>([])
@@ -514,6 +516,7 @@ function MopedDetailModal({
   onDelete: (() => void) | undefined
   onClose: () => void
 }) {
+  const isMobile = useIsMobile()
   const [activeTab, setActiveTab] = React.useState<"main" | "history" | "settings">("main")
   const [isImageEditModalOpen, setIsImageEditModalOpen] = React.useState(false)
 
@@ -525,16 +528,16 @@ function MopedDetailModal({
 
   return (
     <>
-      <div className="flex flex-col gap-6 p-8 pb-6 border-b shrink-0">
+      <div className={`flex flex-col gap-4 sm:gap-6 ${isMobile ? 'p-4 pb-4' : 'p-8 pb-6'} border-b shrink-0`}>
         <div className="flex items-center gap-3 group">
           <div className="relative pb-1">
-            <h1 className="text-3xl font-bold">{isNewMoped ? "Новый мопед" : `${formData.brand} ${formData.model}`}</h1>
+            <h1 className={`${isMobile ? 'text-xl' : 'text-3xl'} font-bold`}>{isNewMoped ? "Новый мопед" : `${formData.brand} ${formData.model}`}</h1>
             <span className="absolute -bottom-0 left-0 w-full h-[1px] bg-border group-hover:bg-foreground transition-colors" />
           </div>
         </div>
 
-        <div className="border-b -mb-6 -mx-8 px-8">
-          <nav className="flex gap-6" aria-label="Moped sections">
+        <div className={`border-b ${isMobile ? '-mb-4 -mx-4 px-4' : '-mb-6 -mx-8 px-8'}`}>
+          <nav className={`flex ${isMobile ? 'gap-4' : 'gap-6'} overflow-x-auto scrollbar-hide`} aria-label="Moped sections">
             <button
               onClick={() => setActiveTab("main")}
               className={`text-muted-foreground hover:text-foreground relative whitespace-nowrap border-b-2 text-sm font-medium transition-colors pb-3.5 ${
@@ -563,10 +566,10 @@ function MopedDetailModal({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-8 py-6">
+      <div className={`flex-1 overflow-y-auto ${isMobile ? 'px-4 py-4' : 'px-8 py-6'}`}>
         {activeTab === "main" ? (
-          <div className="flex gap-6">
-            <div className="w-[280px] flex-shrink-0">
+          <div className={`flex ${isMobile ? 'flex-col' : 'flex-row'} gap-4 sm:gap-6`}>
+            <div className={`${isMobile ? 'w-full' : 'w-[280px]'} flex-shrink-0`}>
               <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted group sticky top-0">
                 <img
                   src={formData.photo || "/placeholder.svg?height=400&width=400&query=scooter"}
@@ -585,7 +588,7 @@ function MopedDetailModal({
             </div>
 
             <div className="flex-1 space-y-1">
-              <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
+              <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
                 <div className="text-sm text-muted-foreground">Марка</div>
                 <div>
                   <Input
@@ -597,7 +600,7 @@ function MopedDetailModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
+              <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
                 <div className="text-sm text-muted-foreground">Модель</div>
                 <div>
                   <Input
@@ -609,7 +612,7 @@ function MopedDetailModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
+              <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
                 <div className="text-sm text-muted-foreground">Гос. номер</div>
                 <div>
                   <Input
@@ -621,7 +624,7 @@ function MopedDetailModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
+              <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
                 <div className="text-sm text-muted-foreground">№ Тех паспорта</div>
                 <div>
                   <Input
@@ -633,7 +636,7 @@ function MopedDetailModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
+              <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
                 <div className="text-sm text-muted-foreground">VIN-Code</div>
                 <div>
                   <Input
@@ -645,7 +648,7 @@ function MopedDetailModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
+              <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
                 <div className="text-sm text-muted-foreground">Цвет</div>
                 <div>
                   <Input
@@ -657,7 +660,7 @@ function MopedDetailModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
+              <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
                 <div className="text-sm text-muted-foreground">Пробег</div>
                 <div>
                   <Input
@@ -669,7 +672,7 @@ function MopedDetailModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
+              <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
                 <div className="text-sm text-muted-foreground">Состояние</div>
                 <div>
                   <Select
@@ -688,7 +691,7 @@ function MopedDetailModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
+              <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
                 <div className="text-sm text-muted-foreground">Дата страховки</div>
                 <div>
                   <Input
@@ -700,7 +703,7 @@ function MopedDetailModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
+              <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
                 <div className="text-sm text-muted-foreground">Дата Тех-Осмотра</div>
                 <div>
                   <Input
@@ -712,7 +715,7 @@ function MopedDetailModal({
                 </div>
               </div>
 
-              <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
+              <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
                 <div className="text-sm text-muted-foreground">Статус</div>
                 <div>
                   <Select
@@ -732,7 +735,7 @@ function MopedDetailModal({
               </div>
 
               {!isNewMoped && moped?.createdAt && (
-                <div className="grid grid-cols-[180px_1fr] items-center gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2">
+                <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
                   <div className="text-sm text-muted-foreground">Дата создания</div>
                   <div>
                     <span className="text-sm">{new Date(moped.createdAt).toLocaleDateString("ru-RU")}</span>
