@@ -404,7 +404,8 @@ export function getUserById(id: string | null): AppUser | null {
   // Для синхронного доступа используем кэш
   const cached = getCachedUsers()
   if (cached) {
-    return cached.find((u) => u.id === id) || null
+    const user = cached.find((u) => u.id === id)
+    return user ? ensureAdminHasAllPermissions(user) : null
   }
   return null
 }
@@ -436,7 +437,7 @@ export async function findUserByCredentials(email: string, password: string): Pr
             const user = parsed.find((u) => normalizeEmail(u.email) === normalizedEmail)
             if (user && user.password === password) {
               console.log('Пользователь найден в localStorage (fallback)')
-              return user
+              return ensureAdminHasAllPermissions(user)
             }
           }
         } catch (localError) {
@@ -456,7 +457,7 @@ export async function findUserByCredentials(email: string, password: string): Pr
             const user = parsed.find((u) => normalizeEmail(u.email) === normalizedEmail)
             if (user && user.password === password) {
               console.log('Пользователь найден в localStorage (fallback)')
-              return user
+              return ensureAdminHasAllPermissions(user)
             }
           }
         } catch (localError) {
@@ -467,7 +468,8 @@ export async function findUserByCredentials(email: string, password: string): Pr
     }
 
     const user = mapDbToUser(data)
-    return user.password === password ? user : null
+    const userWithAllPermissions = ensureAdminHasAllPermissions(user)
+    return userWithAllPermissions.password === password ? userWithAllPermissions : null
   } catch (error) {
     console.error('Error finding user by credentials:', error)
     // Fallback на localStorage при ошибке
