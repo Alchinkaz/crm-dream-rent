@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 
 import * as React from "react"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -103,6 +103,7 @@ export function DealDetailModal({
   const [isEmergencyContactPopoverOpen, setIsEmergencyContactPopoverOpen] = React.useState(false)
   const [contactSearchQuery, setContactSearchQuery] = React.useState("")
   const [emergencyContactSearchQuery, setEmergencyContactSearchQuery] = React.useState("")
+  const [isCreatingEmergencyContact, setIsCreatingEmergencyContact] = React.useState(false)
 
   const filteredMopeds = React.useMemo(() => {
     return mopedSearchQuery
@@ -1262,6 +1263,12 @@ export function DealDetailModal({
         }
       }}>
         <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto scrollbar-hide`} hideClose>
+          <DialogTitle className="sr-only">
+            {viewingMopedModal ? "Редактировать мопед" : "Создать мопед"}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            {viewingMopedModal ? "Измените информацию о мопеде" : "Заполните информацию о новом мопеде"}
+          </DialogDescription>
           <MopedDetailView
             moped={viewingMopedModal}
             onSave={viewingMopedModal ? handleSaveMopedFromModal : handleCreateMoped}
