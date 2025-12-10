@@ -143,6 +143,7 @@ function KanbanColumn({
   onDeleteStage,
   mopedMap,
   isMobile = false,
+  isTablet = false,
 }: {
   stage: KanbanStage
   deals: DealWithFields[]
