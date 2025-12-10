@@ -264,6 +264,7 @@ export function FieldConfigurationDialog({
   groups,
   onSave,
 }: FieldConfigurationDialogProps) {
+  const isMobile = useIsMobile()
   const [editedFields, setEditedFields] = React.useState<CustomField[]>(fields)
   const [editedGroups, setEditedGroups] = React.useState<FieldGroup[]>(groups)
   const [addFieldOpen, setAddFieldOpen] = React.useState(false)
