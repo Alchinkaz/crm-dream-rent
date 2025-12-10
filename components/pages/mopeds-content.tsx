@@ -152,6 +152,7 @@ function KanbanColumn({
   onDeleteStage?: (stageId: string) => void
   mopedMap?: Map<string, Moped>
   isMobile?: boolean
+  isTablet?: boolean
 }) {
   const { setNodeRef } = useSortable({
     id: stage.id,
@@ -160,8 +161,11 @@ function KanbanColumn({
 
   const lightBackgroundColor = `${stage.color}15` // Add 15 (hex for ~8% opacity) to the color
   
+  // На планшетах колонки немного уже
+  const columnWidth = isMobile ? 'w-full' : isTablet ? 'min-w-[280px]' : 'min-w-[320px]'
+  
   return (
-    <div className={`flex flex-col gap-3 ${isMobile ? 'w-full' : 'min-w-[320px]'} rounded-lg p-3 sm:p-4`} style={{ backgroundColor: lightBackgroundColor }}>
+    <div className={`flex flex-col gap-3 ${columnWidth} rounded-lg ${isMobile ? 'p-3' : isTablet ? 'p-3' : 'p-4'}`} style={{ backgroundColor: lightBackgroundColor }}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2.5">
           <h3 className="font-semibold text-sm sm:text-base text-foreground">{stage.name}</h3>
