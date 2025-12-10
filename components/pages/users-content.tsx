@@ -61,6 +61,30 @@ const MAIN_PERMISSIONS: AccessPermission[] = [
   "users",
 ]
 
+// Все права на вкладки для всех разделов
+const ALL_TAB_PERMISSIONS: Record<string, TabPermission[]> = {
+  mopeds: [
+    { tab: "rentals", access: "edit" },
+    { tab: "inventory", access: "edit" },
+    { tab: "contacts", access: "edit" },
+  ],
+  cars: [
+    { tab: "rentals", access: "edit" },
+    { tab: "inventory", access: "edit" },
+    { tab: "contacts", access: "edit" },
+  ],
+  motorcycles: [
+    { tab: "rentals", access: "edit" },
+    { tab: "inventory", access: "edit" },
+    { tab: "contacts", access: "edit" },
+  ],
+  apartments: [
+    { tab: "rentals", access: "edit" },
+    { tab: "inventory", access: "edit" },
+    { tab: "contacts", access: "edit" },
+  ],
+}
+
 export function UsersContent() {
   const { isAdmin, user: currentUser } = useAuth()
   const [users, setUsers] = useState<AppUser[]>([])
@@ -211,12 +235,14 @@ export function UsersContent() {
 
   const handleEdit = (user: AppUser) => {
     setEditingUser(user)
+    // Для дефолтного администратора всегда показываем все права
+    const isDefaultAdmin = user.email.toLowerCase() === "info@dreamrent.kz"
     setEditForm({
       name: user.name,
       email: user.email,
       password: "", // Не показываем пароль при редактировании
-      permissions: user.permissions || [],
-      tabPermissions: user.tabPermissions || {},
+      permissions: isDefaultAdmin ? MAIN_PERMISSIONS : (user.permissions || []),
+      tabPermissions: isDefaultAdmin ? ALL_TAB_PERMISSIONS : (user.tabPermissions || {}),
     })
     setError("")
     setSuccess("")
@@ -473,9 +499,20 @@ export function UsersContent() {
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          {u.email === "info@dreamrent.kz" ? (
-                            <Badge variant="secondary">Защищено</Badge>
+                        <div className="flex justify-end gap-2 items-center">
+                          {u.email.toLowerCase() === "info@dreamrent.kz" ? (
+                            <>
+                              <Badge variant="default" className="mr-2">Полный админ</Badge>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                onClick={() => handleEdit(u)}
+                                aria-label="Редактировать"
+                                title="Просмотр прав (все права защищены)"
+                              >
+                                <IconPencil className="size-4" />
+                              </Button>
+                            </>
                           ) : (
                             <>
                               <Button
@@ -517,6 +554,13 @@ export function UsersContent() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {editingUser?.email.toLowerCase() === "info@dreamrent.kz" && (
+              <div className="rounded-lg bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 p-3">
+                <p className="text-sm text-blue-900 dark:text-blue-100">
+                  <strong>Полный администратор:</strong> Этот пользователь всегда имеет все права доступа. Изменения прав будут автоматически восстановлены.
+                </p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="edit-name">Имя</Label>
               <Input
@@ -532,9 +576,17 @@ export function UsersContent() {
                 id="edit-email"
                 type="email"
                 value={editForm.email}
-                onChange={(e) => setEditForm((prev) => ({ ...prev, email: e.target.value }))}
+                onChange={(e) => {
+                  if (editingUser?.email.toLowerCase() !== "info@dreamrent.kz") {
+                    setEditForm((prev) => ({ ...prev, email: e.target.value }))
+                  }
+                }}
+                disabled={editingUser?.email.toLowerCase() === "info@dreamrent.kz"}
                 required
               />
+              {editingUser?.email.toLowerCase() === "info@dreamrent.kz" && (
+                <p className="text-xs text-muted-foreground">Email дефолтного администратора нельзя изменить</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="edit-password">Новый пароль (оставьте пустым, чтобы не менять)</Label>

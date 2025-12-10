@@ -159,8 +159,59 @@ export const ROLE_DEFAULT_TAB_PERMISSIONS: Record<UserRole, Record<string, TabPe
 
 const DEFAULT_ADMIN_EMAIL = "info@dreamrent.kz"
 
+// Все возможные права доступа
+const ALL_PERMISSIONS: AccessPermission[] = [
+  "dashboard",
+  "finances",
+  "motorcycles",
+  "mopeds",
+  "cars",
+  "apartments",
+  "clients",
+  "projects",
+  "settings",
+  "help",
+  "users",
+]
+
+// Все права на вкладки для всех разделов
+const ALL_TAB_PERMISSIONS: Record<string, TabPermission[]> = {
+  mopeds: [
+    { tab: "rentals", access: "edit" },
+    { tab: "inventory", access: "edit" },
+    { tab: "contacts", access: "edit" },
+  ],
+  cars: [
+    { tab: "rentals", access: "edit" },
+    { tab: "inventory", access: "edit" },
+    { tab: "contacts", access: "edit" },
+  ],
+  motorcycles: [
+    { tab: "rentals", access: "edit" },
+    { tab: "inventory", access: "edit" },
+    { tab: "contacts", access: "edit" },
+  ],
+  apartments: [
+    { tab: "rentals", access: "edit" },
+    { tab: "inventory", access: "edit" },
+    { tab: "contacts", access: "edit" },
+  ],
+}
+
 function normalizeEmail(email: string) {
   return email.trim().toLowerCase()
+}
+
+// Гарантирует, что дефолтный администратор всегда имеет все права
+function ensureAdminHasAllPermissions(user: AppUser): AppUser {
+  if (normalizeEmail(user.email) === normalizeEmail(DEFAULT_ADMIN_EMAIL)) {
+    return {
+      ...user,
+      permissions: ALL_PERMISSIONS,
+      tabPermissions: ALL_TAB_PERMISSIONS,
+    }
+  }
+  return user
 }
 
 // Функции для работы с localStorage кэшем
@@ -211,7 +262,7 @@ function mapDbToUser(dbUser: any): AppUser {
     !p.includes('.') && ['dashboard', 'finances', 'motorcycles', 'mopeds', 'cars', 'apartments', 'clients', 'projects', 'settings', 'help', 'users'].includes(p)
   ) as AccessPermission[]
   
-  return {
+  const user: AppUser = {
     id: dbUser.id,
     name: dbUser.name,
     email: dbUser.email,
@@ -222,6 +273,9 @@ function mapDbToUser(dbUser: any): AppUser {
     // role может быть в старых данных, но не используется
     role: dbUser.role as UserRole | undefined,
   }
+  
+  // Гарантируем, что дефолтный администратор всегда имеет все права
+  return ensureAdminHasAllPermissions(user)
 }
 
 // Map our type to database column names
@@ -497,15 +551,22 @@ export async function updateUser(id: string, updates: Partial<Omit<AppUser, "id"
 
     const existing = mapDbToUser(existingData)
 
-    // Проверяем, не пытаемся ли удалить все права у стандартного администратора
-    if (normalizeEmail(existing.email) === normalizeEmail(DEFAULT_ADMIN_EMAIL)) {
-      if (updates.permissions && updates.permissions.length === 0) {
-        return { error: "Нельзя удалить все права у стандартного администратора" }
-      }
+    // Если это дефолтный администратор, всегда восстанавливаем все права
+    const isDefaultAdmin = normalizeEmail(existing.email) === normalizeEmail(DEFAULT_ADMIN_EMAIL)
+    
+    if (isDefaultAdmin) {
+      // Дефолтный администратор всегда имеет все права - игнорируем изменения прав
+      updates.permissions = ALL_PERMISSIONS
+      updates.tabPermissions = ALL_TAB_PERMISSIONS
     }
 
     // Если обновляется email, проверяем уникальность
     if (updates.email && normalizeEmail(updates.email) !== normalizeEmail(existing.email)) {
+      // Нельзя изменить email дефолтного администратора
+      if (isDefaultAdmin) {
+        return { error: "Нельзя изменить email стандартного администратора" }
+      }
+      
       const { data: emailCheck } = await supabase
         .from('users')
         .select('id')
