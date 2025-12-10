@@ -333,39 +333,51 @@ END;
 $$ language 'plpgsql';
 
 -- Триггеры для автоматического обновления updated_at
+DROP TRIGGER IF EXISTS update_contacts_updated_at ON contacts;
 CREATE TRIGGER update_contacts_updated_at BEFORE UPDATE ON contacts
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_mopeds_updated_at ON mopeds;
 CREATE TRIGGER update_mopeds_updated_at BEFORE UPDATE ON mopeds
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_kanban_stages_updated_at ON kanban_stages;
 CREATE TRIGGER update_kanban_stages_updated_at BEFORE UPDATE ON kanban_stages
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_deals_updated_at ON deals;
 CREATE TRIGGER update_deals_updated_at BEFORE UPDATE ON deals
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_kanban_custom_fields_updated_at ON kanban_custom_fields;
 CREATE TRIGGER update_kanban_custom_fields_updated_at BEFORE UPDATE ON kanban_custom_fields
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_kanban_field_groups_updated_at ON kanban_field_groups;
 CREATE TRIGGER update_kanban_field_groups_updated_at BEFORE UPDATE ON kanban_field_groups
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_document_templates_updated_at ON document_templates;
 CREATE TRIGGER update_document_templates_updated_at BEFORE UPDATE ON document_templates
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_warehouses_updated_at ON warehouses;
 CREATE TRIGGER update_warehouses_updated_at BEFORE UPDATE ON warehouses
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_resources_updated_at ON resources;
 CREATE TRIGGER update_resources_updated_at BEFORE UPDATE ON resources
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_departments_updated_at ON departments;
 CREATE TRIGGER update_departments_updated_at BEFORE UPDATE ON departments
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_employees_updated_at ON employees;
 CREATE TRIGGER update_employees_updated_at BEFORE UPDATE ON employees
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_counterparties_updated_at ON counterparties;
 CREATE TRIGGER update_counterparties_updated_at BEFORE UPDATE ON counterparties
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -391,54 +403,67 @@ ALTER TABLE counterparty_contacts ENABLE ROW LEVEL SECURITY;
 -- Для production лучше настроить более строгие политики
 
 -- Контакты
+DROP POLICY IF EXISTS "Allow all access to contacts" ON contacts;
 CREATE POLICY "Allow all access to contacts" ON contacts
     FOR ALL USING (true) WITH CHECK (true);
 
 -- Мопеды
+DROP POLICY IF EXISTS "Allow all access to mopeds" ON mopeds;
 CREATE POLICY "Allow all access to mopeds" ON mopeds
     FOR ALL USING (true) WITH CHECK (true);
 
 -- Канбан стадии
+DROP POLICY IF EXISTS "Allow all access to kanban_stages" ON kanban_stages;
 CREATE POLICY "Allow all access to kanban_stages" ON kanban_stages
     FOR ALL USING (true) WITH CHECK (true);
 
 -- Сделки
+DROP POLICY IF EXISTS "Allow all access to deals" ON deals;
 CREATE POLICY "Allow all access to deals" ON deals
     FOR ALL USING (true) WITH CHECK (true);
 
 -- Канбан поля
+DROP POLICY IF EXISTS "Allow all access to kanban_custom_fields" ON kanban_custom_fields;
 CREATE POLICY "Allow all access to kanban_custom_fields" ON kanban_custom_fields
     FOR ALL USING (true) WITH CHECK (true);
 
 -- Канбан группы полей
+DROP POLICY IF EXISTS "Allow all access to kanban_field_groups" ON kanban_field_groups;
 CREATE POLICY "Allow all access to kanban_field_groups" ON kanban_field_groups
     FOR ALL USING (true) WITH CHECK (true);
 
 -- Шаблоны документов
+DROP POLICY IF EXISTS "Allow all access to document_templates" ON document_templates;
 CREATE POLICY "Allow all access to document_templates" ON document_templates
     FOR ALL USING (true) WITH CHECK (true);
 
 -- Склады
+DROP POLICY IF EXISTS "Allow all access to warehouses" ON warehouses;
 CREATE POLICY "Allow all access to warehouses" ON warehouses
     FOR ALL USING (true) WITH CHECK (true);
 
 -- Ресурсы
+DROP POLICY IF EXISTS "Allow all access to resources" ON resources;
 CREATE POLICY "Allow all access to resources" ON resources
     FOR ALL USING (true) WITH CHECK (true);
 
 -- Отделы
+DROP POLICY IF EXISTS "Allow all access to departments" ON departments;
 CREATE POLICY "Allow all access to departments" ON departments
     FOR ALL USING (true) WITH CHECK (true);
 
 -- Сотрудники
+DROP POLICY IF EXISTS "Allow all access to employees" ON employees;
 CREATE POLICY "Allow all access to employees" ON employees
     FOR ALL USING (true) WITH CHECK (true);
 
 -- Контрагенты
+DROP POLICY IF EXISTS "Allow all access to counterparties" ON counterparties;
 CREATE POLICY "Allow all access to counterparties" ON counterparties
     FOR ALL USING (true) WITH CHECK (true);
 
 -- Связи контрагентов с контактами
+DROP POLICY IF EXISTS "Allow all access to counterparty_contacts" ON counterparty_contacts;
 CREATE POLICY "Allow all access to counterparty_contacts" ON counterparty_contacts
     FOR ALL USING (true) WITH CHECK (true);
 
@@ -470,12 +495,14 @@ INSERT INTO users (id, name, email, password, role, permissions, tab_permissions
 ON CONFLICT (id) DO NOTHING;
 
 -- Триггер для автоматического обновления updated_at
+DROP TRIGGER IF EXISTS update_users_updated_at ON users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 -- RLS политика для users
 ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Allow all access to users" ON users;
 CREATE POLICY "Allow all access to users" ON users
     FOR ALL USING (true) WITH CHECK (true);
 
