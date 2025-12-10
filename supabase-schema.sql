@@ -481,6 +481,17 @@ CREATE TABLE IF NOT EXISTS users (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
+-- Удаляем колонку role, если она существует (для миграции существующих таблиц)
+DO $$ 
+BEGIN
+    IF EXISTS (
+        SELECT 1 FROM information_schema.columns 
+        WHERE table_name = 'users' AND column_name = 'role'
+    ) THEN
+        ALTER TABLE users DROP COLUMN role;
+    END IF;
+END $$;
+
 -- Индексы для users
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_role ON users(role);
