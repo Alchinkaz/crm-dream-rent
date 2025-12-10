@@ -25,6 +25,7 @@ import { getContacts, addContact, findContactByNameOrPhone, type Contact } from 
 import { getMopedByIdCached, getMopeds, type Moped } from "@/lib/mopeds-store"
 import { useAuth } from "@/lib/auth"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsTablet } from "@/hooks/use-tablet"
 
 type DealDetailModalProps = {
   open: boolean
