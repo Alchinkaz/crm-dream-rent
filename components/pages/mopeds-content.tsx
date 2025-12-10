@@ -141,6 +141,7 @@ function KanbanColumn({
   onEditStage,
   onDeleteStage,
   mopedMap,
+  isMobile = false,
 }: {
   stage: KanbanStage
   deals: DealWithFields[]
@@ -149,6 +150,7 @@ function KanbanColumn({
   onEditStage?: (stageId: string) => void
   onDeleteStage?: (stageId: string) => void
   mopedMap?: Map<string, Moped>
+  isMobile?: boolean
 }) {
   const { setNodeRef } = useSortable({
     id: stage.id,
@@ -156,8 +158,6 @@ function KanbanColumn({
   })
 
   const lightBackgroundColor = `${stage.color}15` // Add 15 (hex for ~8% opacity) to the color
-
-  const isMobile = useIsMobile()
   
   return (
     <div className={`flex flex-col gap-3 ${isMobile ? 'w-full' : 'min-w-[320px]'} rounded-lg p-3 sm:p-4`} style={{ backgroundColor: lightBackgroundColor }}>
