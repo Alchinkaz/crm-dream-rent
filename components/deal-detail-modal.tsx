@@ -876,6 +876,20 @@ export function DealDetailModal({
                                     onSelect={() => {
                                       setIsMopedPopoverOpen(false)
                                       setViewingMopedModal(null)
+                                      setMopedFormData({
+                                        brand: "",
+                                        model: "",
+                                        licensePlate: "",
+                                        photo: "",
+                                        status: "available",
+                                        grnz: "",
+                                        vinCode: "",
+                                        color: "",
+                                        mileage: "",
+                                        condition: "good",
+                                        insuranceDate: "",
+                                        techInspectionDate: "",
+                                      })
                                       setIsMopedDetailOpen(true)
                                     }}
                                     className="cursor-pointer border-t"
