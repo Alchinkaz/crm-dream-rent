@@ -22,10 +22,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import type { DealWithFields, CustomField, FieldGroup, FieldValue, KanbanStage } from "@/lib/types/crm-fields"
 import { getCustomFields, getFieldGroups, getKanbanStages } from "@/lib/crm-fields-store"
 import { getContacts, addContact, findContactByNameOrPhone, type Contact } from "@/lib/contacts-store"
-import { getMopedByIdCached, getMopeds, addMoped, type Moped } from "@/lib/mopeds-store"
+import { getMopedByIdCached, getMopeds, addMoped, updateMoped, type Moped } from "@/lib/mopeds-store"
 import { useAuth } from "@/lib/auth"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useIsTablet } from "@/hooks/use-tablet"
+import { MopedDetailModal } from "@/components/moped-detail-modal"
 
 type DealDetailModalProps = {
   open: boolean
@@ -98,6 +99,20 @@ export function DealDetailModal({
   const [mopedSearchQuery, setMopedSearchQuery] = React.useState("")
   const [viewingMopedModal, setViewingMopedModal] = React.useState<Moped | null>(null)
   const [isMopedDetailOpen, setIsMopedDetailOpen] = React.useState(false)
+  const [mopedFormData, setMopedFormData] = React.useState({
+    brand: "",
+    model: "",
+    licensePlate: "",
+    photo: "",
+    status: "available" as Moped["status"],
+    grnz: "",
+    vinCode: "",
+    color: "",
+    mileage: "",
+    condition: "good" as "new" | "good" | "broken",
+    insuranceDate: "",
+    techInspectionDate: "",
+  })
   const [isMopedPopoverOpen, setIsMopedPopoverOpen] = React.useState(false)
   const [isContactPopoverOpen, setIsContactPopoverOpen] = React.useState(false)
   const [isEmergencyContactPopoverOpen, setIsEmergencyContactPopoverOpen] = React.useState(false)
@@ -568,16 +583,36 @@ export function DealDetailModal({
     setIsMopedPopoverOpen(false)
   }
 
-  const handleCreateMoped = async (mopedData: Omit<Moped, "id" | "createdAt">) => {
+  const handleCreateMoped = async () => {
+    if (!mopedFormData.brand || !mopedFormData.model || !mopedFormData.licensePlate) {
+      return
+    }
+    
     const newMoped = await addMoped({
-      ...mopedData,
+      ...mopedFormData,
       createdBy: username || undefined,
-    })
+    } as any)
+    
     if (newMoped) {
       await refreshMopeds()
       handleSelectMoped(newMoped)
       setIsMopedDetailOpen(false)
       setViewingMopedModal(null)
+      // Reset form
+      setMopedFormData({
+        brand: "",
+        model: "",
+        licensePlate: "",
+        photo: "",
+        status: "available",
+        grnz: "",
+        vinCode: "",
+        color: "",
+        mileage: "",
+        condition: "good",
+        insuranceDate: "",
+        techInspectionDate: "",
+      })
     }
   }
 
@@ -601,15 +636,38 @@ export function DealDetailModal({
 
   const handleOpenMopedDetail = (moped: Moped) => {
     setViewingMopedModal(moped)
+    setMopedFormData({
+      brand: moped.brand,
+      model: moped.model,
+      licensePlate: moped.licensePlate,
+      photo: moped.photo || "",
+      status: moped.status || "available",
+      grnz: (moped as any).grnz || "",
+      vinCode: (moped as any).vinCode || "",
+      color: (moped as any).color || "",
+      mileage: (moped as any).mileage || "",
+      condition: (moped as any).condition || "good",
+      insuranceDate: (moped as any).insuranceDate || "",
+      techInspectionDate: (moped as any).techInspectionDate || "",
+    })
     setIsMopedDetailOpen(true)
   }
 
-  const handleSaveMopedFromModal = async (updatedMoped: Moped) => {
-    // Refresh mopeds list to reflect changes
-    const latest = await getMopeds()
-    setMopeds(latest)
-    if (savedMoped?.id === updatedMoped.id) {
-      setSavedMoped(updatedMoped)
+  const handleSaveMopedFromModal = async () => {
+    if (!viewingMopedModal) return
+    
+    // Update moped
+    const updatedMoped = await updateMoped(viewingMopedModal.id, {
+      ...mopedFormData,
+    } as any)
+    
+    if (updatedMoped) {
+      // Refresh mopeds list to reflect changes
+      const latest = await getMopeds()
+      setMopeds(latest)
+      if (savedMoped?.id === updatedMoped.id) {
+        setSavedMoped(updatedMoped)
+      }
     }
     setIsMopedDetailOpen(false)
     setViewingMopedModal(null)
@@ -1270,16 +1328,19 @@ export function DealDetailModal({
           setViewingMopedModal(null)
         }
       }}>
-        <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto scrollbar-hide`} hideClose>
+        <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : '!max-w-4xl w-[85vw]'} max-h-[95vh] h-[95vh] overflow-hidden flex flex-col p-0`} hideClose>
           <DialogTitle className="sr-only">
             {viewingMopedModal ? "Редактировать мопед" : "Создать мопед"}
           </DialogTitle>
           <DialogDescription className="sr-only">
             {viewingMopedModal ? "Измените информацию о мопеде" : "Заполните информацию о новом мопеде"}
           </DialogDescription>
-          <MopedDetailView
+          <MopedDetailModal
             moped={viewingMopedModal}
+            formData={mopedFormData}
+            setFormData={setMopedFormData}
             onSave={viewingMopedModal ? handleSaveMopedFromModal : handleCreateMoped}
+            onDelete={undefined}
             onClose={() => {
               setIsMopedDetailOpen(false)
               setViewingMopedModal(null)
@@ -1441,142 +1502,4 @@ function ContactDetailView({
   )
 }
 
-function MopedDetailView({
-  moped,
-  onSave,
-  onClose,
-}: {
-  moped: Moped | null
-  onSave: (moped: Moped | Omit<Moped, "id" | "createdAt">) => void
-  onClose: () => void
-}) {
-  const isNew = !moped
-  const [formData, setFormData] = React.useState({
-    brand: moped?.brand || "",
-    model: moped?.model || "",
-    licensePlate: moped?.licensePlate || "",
-    photo: moped?.photo || "",
-    status: (moped?.status || "available") as "available" | "rented" | "maintenance",
-  })
-
-  const STATUS_LABELS = {
-    available: "Доступен",
-    rented: "В аренде",
-    maintenance: "На обслуживании",
-  }
-
-  const handleSave = () => {
-    if (isNew) {
-      onSave({
-        brand: formData.brand,
-        model: formData.model,
-        licensePlate: formData.licensePlate,
-        photo: formData.photo,
-        status: formData.status,
-      })
-    } else {
-      const updatedMoped: Moped = {
-        ...moped,
-        brand: formData.brand,
-        model: formData.model,
-        licensePlate: formData.licensePlate,
-        photo: formData.photo,
-        status: formData.status,
-      }
-      onSave(updatedMoped)
-    }
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="relative w-full aspect-square rounded-lg overflow-hidden bg-muted group flex items-center justify-center">
-        {formData.photo ? (
-          <img
-            src={formData.photo || "/placeholder.svg"}
-            alt={isNew ? "Новый мопед" : `${formData.brand} ${formData.model}`}
-            className="w-full h-full object-cover"
-          />
-        ) : (
-          <IconScooter className="size-24 text-muted-foreground" />
-        )}
-      </div>
-
-      <div className="group">
-        <input
-          type="text"
-          value={isNew && !formData.brand && !formData.model ? "Новый мопед" : `${formData.brand} ${formData.model}`.trim() || "Новый мопед"}
-          onChange={(e) => {
-            const value = e.target.value
-            if (value === "Новый мопед") {
-              setFormData({ ...formData, brand: "", model: "" })
-            } else {
-              const parts = value.split(" ")
-              setFormData({ ...formData, brand: parts[0] || "", model: parts.slice(1).join(" ") || "" })
-            }
-          }}
-          placeholder="Новый мопед"
-          className="w-full text-xl font-semibold bg-transparent border-none outline-none px-0"
-        />
-        <div className="h-px bg-border mt-1 group-hover:bg-foreground/20 transition-colors" />
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground w-32 flex-shrink-0">Марка</span>
-          <Input
-            placeholder="Honda"
-            value={formData.brand}
-            onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
-            className="flex-1"
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground w-32 flex-shrink-0">Модель</span>
-          <Input
-            placeholder="Dio"
-            value={formData.model}
-            onChange={(e) => setFormData({ ...formData, model: e.target.value })}
-            className="flex-1"
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground w-32 flex-shrink-0">Гос. номер</span>
-          <Input
-            placeholder="A123BC"
-            value={formData.licensePlate}
-            onChange={(e) => setFormData({ ...formData, licensePlate: e.target.value })}
-            className="flex-1"
-          />
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground w-32 flex-shrink-0">Статус</span>
-          <Select
-            value={formData.status}
-            onValueChange={(value: "available" | "rented" | "maintenance") =>
-              setFormData({ ...formData, status: value })
-            }
-          >
-            <SelectTrigger className="flex-1">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="available">Доступен</SelectItem>
-              <SelectItem value="rented">В аренде</SelectItem>
-              <SelectItem value="maintenance">На обслуживании</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      <div className="flex items-center justify-end gap-2 pt-4">
-        <Button variant="outline" onClick={onClose}>
-          Закрыть
-        </Button>
-        <Button onClick={handleSave} disabled={!formData.brand || !formData.model || !formData.licensePlate}>
-          Сохранить изменения
-        </Button>
-      </div>
-    </div>
-  )
-}
 
