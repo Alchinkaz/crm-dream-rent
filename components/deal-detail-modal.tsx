@@ -22,7 +22,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import type { DealWithFields, CustomField, FieldGroup, FieldValue, KanbanStage } from "@/lib/types/crm-fields"
 import { getCustomFields, getFieldGroups, getKanbanStages } from "@/lib/crm-fields-store"
 import { getContacts, addContact, findContactByNameOrPhone, type Contact } from "@/lib/contacts-store"
-import { getMopedByIdCached, getMopeds, type Moped } from "@/lib/mopeds-store"
+import { getMopedByIdCached, getMopeds, addMoped, type Moped } from "@/lib/mopeds-store"
 import { useAuth } from "@/lib/auth"
 import { useIsMobile } from "@/hooks/use-mobile"
 import { useIsTablet } from "@/hooks/use-tablet"
@@ -103,6 +103,9 @@ export function DealDetailModal({
   const [isEmergencyContactPopoverOpen, setIsEmergencyContactPopoverOpen] = React.useState(false)
   const [contactSearchQuery, setContactSearchQuery] = React.useState("")
   const [emergencyContactSearchQuery, setEmergencyContactSearchQuery] = React.useState("")
+  const [isCreateMopedOpen, setIsCreateMopedOpen] = React.useState(false)
+  const [isCreateContactOpen, setIsCreateContactOpen] = React.useState(false)
+  const [isCreateEmergencyContactOpen, setIsCreateEmergencyContactOpen] = React.useState(false)
 
   const filteredMopeds = React.useMemo(() => {
     return mopedSearchQuery
@@ -567,6 +570,42 @@ export function DealDetailModal({
     setIsMopedPopoverOpen(false)
   }
 
+  const handleCreateMoped = async (mopedData: Omit<Moped, "id" | "createdAt">) => {
+    const newMoped = await addMoped({
+      ...mopedData,
+      createdBy: username || undefined,
+    })
+    if (newMoped) {
+      await refreshMopeds()
+      handleSelectMoped(newMoped)
+      setIsCreateMopedOpen(false)
+    }
+  }
+
+  const handleCreateContact = async (contactData: Omit<Contact, "id" | "createdAt">) => {
+    const newContact = await addContact({
+      ...contactData,
+      createdBy: username || undefined,
+    })
+    if (newContact) {
+      await refreshContacts()
+      handleSelectContact(newContact)
+      setIsCreateContactOpen(false)
+    }
+  }
+
+  const handleCreateEmergencyContact = async (contactData: Omit<Contact, "id" | "createdAt">) => {
+    const newContact = await addContact({
+      ...contactData,
+      createdBy: username || undefined,
+    })
+    if (newContact) {
+      await refreshContacts()
+      handleSelectEmergencyContact(newContact)
+      setIsCreateEmergencyContactOpen(false)
+    }
+  }
+
   const handleOpenMopedDetail = (moped: Moped) => {
     setViewingMopedModal(moped)
     setIsMopedDetailOpen(true)
@@ -871,6 +910,18 @@ export function DealDetailModal({
                               <CommandList>
                                 <CommandEmpty>Контакты не найдены</CommandEmpty>
                                 <CommandGroup>
+                                  <CommandItem
+                                    onSelect={() => {
+                                      setIsContactPopoverOpen(false)
+                                      setIsCreateContactOpen(true)
+                                    }}
+                                    className="cursor-pointer border-t"
+                                  >
+                                    <div className="flex items-center gap-2 w-full text-primary">
+                                      <IconUser className="size-4" />
+                                      <span className="text-sm font-medium">Создать новый контакт</span>
+                                    </div>
+                                  </CommandItem>
                                   {filteredContacts.map((contact) => (
                                     <CommandItem
                                       key={contact.id}
@@ -1187,6 +1238,36 @@ export function DealDetailModal({
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Модальное окно создания мопеда */}
+      <Dialog open={isCreateMopedOpen} onOpenChange={setIsCreateMopedOpen}>
+        <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto`}>
+          <CreateMopedForm
+            onSave={handleCreateMoped}
+            onClose={() => setIsCreateMopedOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Модальное окно создания контакта */}
+      <Dialog open={isCreateContactOpen} onOpenChange={setIsCreateContactOpen}>
+        <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto`}>
+          <CreateContactForm
+            onSave={handleCreateContact}
+            onClose={() => setIsCreateContactOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Модальное окно создания экстренного контакта */}
+      <Dialog open={isCreateEmergencyContactOpen} onOpenChange={setIsCreateEmergencyContactOpen}>
+        <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto`}>
+          <CreateContactForm
+            onSave={handleCreateEmergencyContact}
+            onClose={() => setIsCreateEmergencyContactOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
