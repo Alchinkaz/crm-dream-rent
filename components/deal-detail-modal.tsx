@@ -769,7 +769,7 @@ export function DealDetailModal({
                               Добавить мопед
                             </Button>
                           </PopoverTrigger>
-                          <PopoverContent className="w-[250px] p-0" align="start">
+                          <PopoverContent className={`${isMobile ? 'w-[calc(100vw-2rem)]' : 'w-[250px]'} p-0`} align="start">
                             <Command shouldFilter={false}>
                               <CommandInput
                                 placeholder="Поиск по номеру или модели..."
