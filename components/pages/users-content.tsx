@@ -81,7 +81,6 @@ export function UsersContent() {
     permissions: [],
     tabPermissions: {},
   })
-  const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
 
   useEffect(() => {
     const load = async () => {
@@ -274,18 +273,11 @@ export function UsersContent() {
     })
   }
 
-  const toggleSection = (section: string) => {
-    setOpenSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }))
-  }
 
   const renderSectionTabs = (section: SectionWithTabs, isEdit = false) => {
     const formData = isEdit ? editForm : form
     const hasAccess = formData.permissions.includes(section)
     const tabs = SECTION_TABS[section]
-    const isOpen = openSections[section]
 
     if (!hasAccess) return null
 
@@ -296,10 +288,9 @@ export function UsersContent() {
             <Button
               variant="outline"
               className="w-full justify-between"
-              onClick={() => toggleSection(section)}
             >
               <span>{SECTION_LABELS[section]}</span>
-              <IconChevronDown className={`h-4 w-4 transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+              <IconChevronDown className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-80">
