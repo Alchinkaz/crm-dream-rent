@@ -139,7 +139,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <div className="flex items-center gap-2 group-data-[collapsible=icon]:hidden">
             <span className="text-sm font-semibold">Dream Rent</span>
           </div>
-          <SidebarTrigger className="h-8 w-8" />
+          <SidebarTrigger className="h-8 w-8 hidden md:flex" />
         </div>
       </SidebarHeader>
       <SidebarContent>

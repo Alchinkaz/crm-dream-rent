@@ -10,6 +10,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <ProtectedRoute>
       <SidebarProvider
+        defaultOpen={false}
         style={
           {
             "--sidebar-width": "calc(var(--spacing) * 64)",
@@ -20,8 +21,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <AppSidebar variant="inset" collapsible="icon" />
         <SidebarInset>
           <SiteHeader />
-          <div className="flex flex-1 flex-col">
-            <div className="@container/main flex flex-1 flex-col gap-2">{children}</div>
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <div className="@container/main flex flex-1 flex-col gap-2 p-2 sm:p-4 md:p-6 overflow-y-auto">{children}</div>
           </div>
         </SidebarInset>
       </SidebarProvider>
