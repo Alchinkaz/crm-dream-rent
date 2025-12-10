@@ -342,7 +342,8 @@ export async function getUsers(): Promise<AppUser[]> {
           const stored = localStorage.getItem('crm_users')
           if (stored) {
             const parsed = JSON.parse(stored) as AppUser[]
-            const finalUsers = ensureAdminPresent(parsed)
+            const usersWithAllPermissions = parsed.map(ensureAdminHasAllPermissions)
+            const finalUsers = ensureAdminPresent(usersWithAllPermissions)
             setCachedUsers(finalUsers)
             return finalUsers
           }
@@ -360,7 +361,8 @@ export async function getUsers(): Promise<AppUser[]> {
           const stored = localStorage.getItem('crm_users')
           if (stored) {
             const parsed = JSON.parse(stored) as AppUser[]
-            const finalUsers = ensureAdminPresent(parsed)
+            const usersWithAllPermissions = parsed.map(ensureAdminHasAllPermissions)
+            const finalUsers = ensureAdminPresent(usersWithAllPermissions)
             setCachedUsers(finalUsers)
             return finalUsers
           }
