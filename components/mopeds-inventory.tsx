@@ -768,11 +768,11 @@ function MopedDetailModal({
         )}
       </div>
 
-      <div className="flex items-center justify-end gap-2 px-8 py-4 border-t bg-muted/30 shrink-0">
-        <Button variant="outline" onClick={onClose}>
+      <div className={`flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2 ${isMobile ? 'px-4' : 'px-8'} py-4 border-t bg-muted/30 shrink-0`}>
+        <Button variant="outline" onClick={onClose} className="w-full sm:w-auto">
           Отмена
         </Button>
-        <Button onClick={onSave} disabled={!formData.brand || !formData.model || !formData.licensePlate}>
+        <Button onClick={onSave} disabled={!formData.brand || !formData.model || !formData.licensePlate} className="w-full sm:w-auto">
           {isNewMoped ? "Добавить" : "Сохранить"}
         </Button>
       </div>
