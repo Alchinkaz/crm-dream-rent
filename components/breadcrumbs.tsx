@@ -55,16 +55,16 @@ export function Breadcrumbs() {
   if (breadcrumbs.length === 0) return null
 
   return (
-    <nav className="flex items-center gap-1 text-sm text-muted-foreground">
+    <nav className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground overflow-x-auto scrollbar-hide">
       {breadcrumbs.map((crumb, index) => (
-        <div key={index} className="flex items-center gap-1">
-          {index > 0 && <IconChevronRight className="h-4 w-4" />}
+        <div key={index} className="flex items-center gap-1 flex-shrink-0">
+          {index > 0 && <IconChevronRight className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />}
           {crumb.href ? (
-            <Link href={crumb.href} className="hover:text-foreground transition-colors">
+            <Link href={crumb.href} className="hover:text-foreground transition-colors whitespace-nowrap">
               {crumb.label}
             </Link>
           ) : (
-            <span className={index === breadcrumbs.length - 1 ? "text-foreground font-medium" : ""}>
+            <span className={`whitespace-nowrap ${index === breadcrumbs.length - 1 ? "text-foreground font-medium" : ""}`}>
               {crumb.label}
             </span>
           )}
