@@ -88,6 +88,7 @@ const ALL_TAB_PERMISSIONS: Record<string, TabPermission[]> = {
 
 export function UsersContent() {
   const { isAdmin, user: currentUser } = useAuth()
+  const isMobile = useIsMobile()
   const [users, setUsers] = useState<AppUser[]>([])
   const [form, setForm] = useState<FormState>({
     name: "",
@@ -333,13 +334,13 @@ export function UsersContent() {
               <IconChevronDown className="h-4 w-4" />
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-80">
+          <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80">
             <div className="space-y-3">
-              <div className="font-semibold text-sm">{SECTION_LABELS[section]}</div>
+              <div className="font-semibold text-xs sm:text-sm">{SECTION_LABELS[section]}</div>
               {tabs.map((tab) => (
                 <div key={tab} className="space-y-2">
                   <div className="text-xs font-medium text-muted-foreground">{TAB_LABELS[tab]}</div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                     {(["none", "view", "edit"] as const).map((access) => (
                       <label key={access} className="flex items-center gap-1.5 text-xs cursor-pointer">
                         <input
@@ -466,11 +467,11 @@ export function UsersContent() {
               {error && <p className="text-sm text-destructive">{error}</p>}
               {success && <p className="text-sm text-emerald-600">{success}</p>}
 
-              <div className="flex gap-2">
-                <Button type="submit" className="flex-1">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <Button type="submit" className="flex-1 w-full sm:w-auto">
                   Сохранить
                 </Button>
-                <Button type="button" variant="outline" onClick={resetForm}>
+                <Button type="button" variant="outline" onClick={resetForm} className="w-full sm:w-auto">
                   Очистить
                 </Button>
               </div>
@@ -616,7 +617,7 @@ export function UsersContent() {
 
       {/* Диалог редактирования пользователя */}
       <Dialog open={!!editingUser} onOpenChange={(open) => !open && setEditingUser(null)}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto w-[95vw] sm:w-full">
           <DialogHeader>
             <DialogTitle>Редактировать пользователя</DialogTitle>
             <DialogDescription>
@@ -736,11 +737,11 @@ export function UsersContent() {
             {error && <p className="text-sm text-destructive">{error}</p>}
             {success && <p className="text-sm text-emerald-600">{success}</p>}
 
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setEditingUser(null)}>
+            <div className="flex flex-col-reverse sm:flex-row gap-2 justify-end">
+              <Button variant="outline" onClick={() => setEditingUser(null)} className="w-full sm:w-auto">
                 Отмена
               </Button>
-              <Button onClick={handleEditSubmit}>
+              <Button onClick={handleEditSubmit} className="w-full sm:w-auto">
                 Сохранить изменения
               </Button>
             </div>
