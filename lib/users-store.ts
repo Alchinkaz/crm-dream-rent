@@ -590,10 +590,14 @@ export async function updateUser(id: string, updates: Partial<Omit<AppUser, "id"
       }
     }
 
+    // Для дефолтного администратора всегда используем максимальные права
+    const finalPermissions = isDefaultAdmin ? ALL_PERMISSIONS : (updates.permissions !== undefined ? updates.permissions : existing.permissions)
+    const finalTabPermissions = isDefaultAdmin ? ALL_TAB_PERMISSIONS : (updates.tabPermissions !== undefined ? updates.tabPermissions : existing.tabPermissions)
+    
     const dbUpdates = mapUserToDb({
       ...updates,
-      permissions: updates.permissions !== undefined ? updates.permissions : existing.permissions,
-      tabPermissions: updates.tabPermissions !== undefined ? updates.tabPermissions : existing.tabPermissions,
+      permissions: finalPermissions,
+      tabPermissions: finalTabPermissions,
     })
     
     const { data, error } = await supabase
