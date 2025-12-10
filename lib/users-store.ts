@@ -277,8 +277,39 @@ export async function getUsers(): Promise<AppUser[]> {
       .order('created_at', { ascending: false })
 
     if (error) {
-      console.error('Error fetching users:', error)
+      console.error('Error fetching users from Supabase:', error)
+      // Fallback: используем localStorage если таблица еще не создана
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('crm_users')
+          if (stored) {
+            const parsed = JSON.parse(stored) as AppUser[]
+            const finalUsers = ensureAdminPresent(parsed)
+            setCachedUsers(finalUsers)
+            return finalUsers
+          }
+        } catch (localError) {
+          console.error('Error reading from localStorage:', localError)
+        }
+      }
       return []
+    }
+
+    // Если таблица пуста, пробуем загрузить из localStorage
+    if (!data || data.length === 0) {
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('crm_users')
+          if (stored) {
+            const parsed = JSON.parse(stored) as AppUser[]
+            const finalUsers = ensureAdminPresent(parsed)
+            setCachedUsers(finalUsers)
+            return finalUsers
+          }
+        } catch (localError) {
+          // Игнорируем ошибки localStorage
+        }
+      }
     }
 
     const mapped = data.map(mapDbToUser)
@@ -292,6 +323,20 @@ export async function getUsers(): Promise<AppUser[]> {
     return finalUsers
   } catch (error) {
     console.error('Error fetching users:', error)
+    // Fallback на localStorage при ошибке
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('crm_users')
+        if (stored) {
+          const parsed = JSON.parse(stored) as AppUser[]
+          const finalUsers = ensureAdminPresent(parsed)
+          setCachedUsers(finalUsers)
+          return finalUsers
+        }
+      } catch (localError) {
+        console.error('Error reading from localStorage:', localError)
+      }
+    }
     return []
   }
 }
@@ -315,7 +360,51 @@ export async function findUserByCredentials(email: string, password: string): Pr
       .eq('email', normalizedEmail)
       .single()
 
-    if (error || !data) {
+    // Если ошибка связана с отсутствием таблицы или данных, используем fallback
+    if (error) {
+      // Проверяем, это ошибка отсутствия таблицы или просто пользователь не найден
+      const isTableError = error.code === 'PGRST116' || error.message?.includes('relation') || error.message?.includes('does not exist')
+      
+      if (isTableError) {
+        console.warn('Таблица users не найдена в Supabase, используем localStorage fallback')
+      }
+      
+      // Fallback: проверяем localStorage для обратной совместимости
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('crm_users')
+          if (stored) {
+            const parsed = JSON.parse(stored) as AppUser[]
+            const user = parsed.find((u) => normalizeEmail(u.email) === normalizedEmail)
+            if (user && user.password === password) {
+              console.log('Пользователь найден в localStorage (fallback)')
+              return user
+            }
+          }
+        } catch (localError) {
+          // Игнорируем ошибки localStorage
+        }
+      }
+      return null
+    }
+
+    if (!data) {
+      // Пользователь не найден в Supabase, пробуем localStorage
+      if (typeof window !== 'undefined') {
+        try {
+          const stored = localStorage.getItem('crm_users')
+          if (stored) {
+            const parsed = JSON.parse(stored) as AppUser[]
+            const user = parsed.find((u) => normalizeEmail(u.email) === normalizedEmail)
+            if (user && user.password === password) {
+              console.log('Пользователь найден в localStorage (fallback)')
+              return user
+            }
+          }
+        } catch (localError) {
+          // Игнорируем ошибки localStorage
+        }
+      }
       return null
     }
 
@@ -323,6 +412,23 @@ export async function findUserByCredentials(email: string, password: string): Pr
     return user.password === password ? user : null
   } catch (error) {
     console.error('Error finding user by credentials:', error)
+    // Fallback на localStorage при ошибке
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('crm_users')
+        if (stored) {
+          const parsed = JSON.parse(stored) as AppUser[]
+          const normalizedEmail = normalizeEmail(email)
+          const user = parsed.find((u) => normalizeEmail(u.email) === normalizedEmail)
+          if (user && user.password === password) {
+            console.log('Пользователь найден в localStorage (fallback после ошибки)')
+            return user
+          }
+        }
+      } catch (localError) {
+        // Игнорируем ошибки localStorage
+      }
+    }
     return null
   }
 }
