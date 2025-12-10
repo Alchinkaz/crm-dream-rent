@@ -69,6 +69,7 @@ import { useToast } from "@/hooks/use-toast"
 import { getDeals, getCachedDeals, createDeal, updateDeal, deleteDeal } from "@/lib/deals-store"
 import { supabase } from "@/lib/supabase"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { useIsTablet } from "@/hooks/use-tablet"
 
 // Define the missing constants
 const STATUS_LABELS = {
@@ -190,7 +191,7 @@ function KanbanColumn({
           </DropdownMenu>
         </div>
       </div>
-      <ScrollArea className={isMobile ? "h-[400px]" : "h-[calc(100vh-280px)]"}>
+      <ScrollArea className={isMobile ? "h-[400px]" : isTablet ? "h-[calc(100vh-260px)]" : "h-[calc(100vh-280px)]"}>
         <SortableContext items={deals.map((d) => d.id)}>
           <div ref={setNodeRef} className="space-y-3 pb-4 min-h-[100px]">
             {deals.map((deal) => (
@@ -954,6 +955,7 @@ export function MopedsContent() {
                           onDeleteStage={handleDeleteStage}
                           mopedMap={mopedMap}
                           isMobile={isMobile}
+                          isTablet={isTablet}
                         />
                       ))
                     )}

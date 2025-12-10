@@ -73,6 +73,7 @@ export function DealDetailModal({
 }: DealDetailModalProps) {
   const { username } = useAuth() // Get authenticated user from auth context
   const isMobile = useIsMobile()
+  const isTablet = useIsTablet()
   const [customFields, setCustomFields] = React.useState<CustomField[]>([])
   const [fieldGroups, setFieldGroups] = React.useState<FieldGroup[]>([])
   const [stages, setStages] = React.useState<KanbanStage[]>([])
@@ -617,7 +618,7 @@ export function DealDetailModal({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className={`!max-w-4xl ${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh]' : 'w-[85vw] max-h-[95vh] h-[95vh]'} overflow-hidden flex flex-col p-0 m-0 ${isMobile ? 'rounded-none' : ''}`}>
+        <DialogContent className={`!max-w-4xl ${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : isTablet ? 'w-[95vw] max-h-[95vh] h-[95vh]' : 'w-[85vw] max-h-[95vh] h-[95vh]'} overflow-hidden flex flex-col p-0 ${isMobile ? 'm-0 rounded-none' : ''}`}>
           <div className="flex flex-col gap-6 p-8 pb-6 border-b shrink-0">
             <div className="flex items-center gap-3 group">
               <div className="relative pb-1">
@@ -710,7 +711,7 @@ export function DealDetailModal({
           </div>
 
           <ScrollArea className="flex-1 overflow-y-auto">
-            <div className={`${isMobile ? 'px-4 py-4' : 'px-8 py-6'}`}>
+            <div className={`${isMobile ? 'px-4 py-4' : isTablet ? 'px-6 py-5' : 'px-8 py-6'}`}>
               {activeTab === "main" ? (
                 <div className="space-y-1">
                   <div className={`${isMobile ? 'flex flex-col gap-2' : 'grid grid-cols-[180px_1fr]'} items-${isMobile ? 'start' : 'center'} gap-4 py-2 hover:bg-muted/50 rounded-md px-2 -mx-2`}>
