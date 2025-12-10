@@ -1242,15 +1242,23 @@ export function DealDetailModal({
         setIsContactDetailOpen(open)
         if (!open) {
           setViewingContactModal(null)
+          setIsCreatingEmergencyContact(false)
         }
       }}>
         <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto scrollbar-hide`} hideClose>
+          <DialogTitle className="sr-only">
+            {viewingContactModal ? "Редактировать контакт" : isCreatingEmergencyContact ? "Создать экстренный контакт" : "Создать контакт"}
+          </DialogTitle>
+          <DialogDescription className="sr-only">
+            {viewingContactModal ? "Измените информацию о контакте" : "Заполните информацию о новом контакте"}
+          </DialogDescription>
           <ContactDetailView
             contact={viewingContactModal}
             onSave={viewingContactModal ? handleSaveContactFromModal : handleCreateContact}
             onClose={() => {
               setIsContactDetailOpen(false)
               setViewingContactModal(null)
+              setIsCreatingEmergencyContact(false)
             }}
           />
         </DialogContent>
