@@ -103,9 +103,6 @@ export function DealDetailModal({
   const [isEmergencyContactPopoverOpen, setIsEmergencyContactPopoverOpen] = React.useState(false)
   const [contactSearchQuery, setContactSearchQuery] = React.useState("")
   const [emergencyContactSearchQuery, setEmergencyContactSearchQuery] = React.useState("")
-  const [isCreateMopedOpen, setIsCreateMopedOpen] = React.useState(false)
-  const [isCreateContactOpen, setIsCreateContactOpen] = React.useState(false)
-  const [isCreateEmergencyContactOpen, setIsCreateEmergencyContactOpen] = React.useState(false)
 
   const filteredMopeds = React.useMemo(() => {
     return mopedSearchQuery
@@ -578,7 +575,8 @@ export function DealDetailModal({
     if (newMoped) {
       await refreshMopeds()
       handleSelectMoped(newMoped)
-      setIsCreateMopedOpen(false)
+      setIsMopedDetailOpen(false)
+      setViewingMopedModal(null)
     }
   }
 
@@ -589,20 +587,14 @@ export function DealDetailModal({
     })
     if (newContact) {
       await refreshContacts()
-      handleSelectContact(newContact)
-      setIsCreateContactOpen(false)
-    }
-  }
-
-  const handleCreateEmergencyContact = async (contactData: Omit<Contact, "id" | "createdAt">) => {
-    const newContact = await addContact({
-      ...contactData,
-      createdBy: username || undefined,
-    })
-    if (newContact) {
-      await refreshContacts()
-      handleSelectEmergencyContact(newContact)
-      setIsCreateEmergencyContactOpen(false)
+      if (isCreatingEmergencyContact) {
+        handleSelectEmergencyContact(newContact)
+      } else {
+        handleSelectContact(newContact)
+      }
+      setIsContactDetailOpen(false)
+      setViewingContactModal(null)
+      setIsCreatingEmergencyContact(false)
     }
   }
 
@@ -619,6 +611,7 @@ export function DealDetailModal({
       setSavedMoped(updatedMoped)
     }
     setIsMopedDetailOpen(false)
+    setViewingMopedModal(null)
   }
 
   const handleRemoveMoped = () => {
@@ -823,7 +816,8 @@ export function DealDetailModal({
                                   <CommandItem
                                     onSelect={() => {
                                       setIsMopedPopoverOpen(false)
-                                      setIsCreateMopedOpen(true)
+                                      setViewingMopedModal(null)
+                                      setIsMopedDetailOpen(true)
                                     }}
                                     className="cursor-pointer border-t"
                                   >
@@ -925,7 +919,9 @@ export function DealDetailModal({
                                   <CommandItem
                                     onSelect={() => {
                                       setIsContactPopoverOpen(false)
-                                      setIsCreateContactOpen(true)
+                                      setViewingContactModal(null)
+                                      setIsCreatingEmergencyContact(false)
+                                      setIsContactDetailOpen(true)
                                     }}
                                     className="cursor-pointer border-t"
                                   >
@@ -1025,7 +1021,9 @@ export function DealDetailModal({
                                   <CommandItem
                                     onSelect={() => {
                                       setIsEmergencyContactPopoverOpen(false)
-                                      setIsCreateEmergencyContactOpen(true)
+                                      setViewingContactModal(null)
+                                      setIsCreatingEmergencyContact(true)
+                                      setIsContactDetailOpen(true)
                                     }}
                                     className="cursor-pointer border-t"
                                   >
@@ -1239,56 +1237,38 @@ export function DealDetailModal({
         </DialogContent>
       </Dialog>
 
-      {viewingContactModal && (
-        <Dialog open={isContactDetailOpen} onOpenChange={setIsContactDetailOpen}>
-          <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto scrollbar-hide`} hideClose>
-            <ContactDetailView
-              contact={viewingContactModal}
-              onSave={handleSaveContactFromModal}
-              onClose={() => setIsContactDetailOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {viewingMopedModal && (
-        <Dialog open={isMopedDetailOpen} onOpenChange={setIsMopedDetailOpen}>
-          <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto scrollbar-hide`} hideClose>
-            <MopedDetailView
-              moped={viewingMopedModal}
-              onSave={handleSaveMopedFromModal}
-              onClose={() => setIsMopedDetailOpen(false)}
-            />
-          </DialogContent>
-        </Dialog>
-      )}
-
-      {/* Модальное окно создания мопеда */}
-      <Dialog open={isCreateMopedOpen} onOpenChange={setIsCreateMopedOpen}>
-        <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto`}>
-          <CreateMopedForm
-            onSave={handleCreateMoped}
-            onClose={() => setIsCreateMopedOpen(false)}
+      <Dialog open={isContactDetailOpen} onOpenChange={(open) => {
+        setIsContactDetailOpen(open)
+        if (!open) {
+          setViewingContactModal(null)
+        }
+      }}>
+        <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto scrollbar-hide`} hideClose>
+          <ContactDetailView
+            contact={viewingContactModal}
+            onSave={viewingContactModal ? handleSaveContactFromModal : handleCreateContact}
+            onClose={() => {
+              setIsContactDetailOpen(false)
+              setViewingContactModal(null)
+            }}
           />
         </DialogContent>
       </Dialog>
 
-      {/* Модальное окно создания контакта */}
-      <Dialog open={isCreateContactOpen} onOpenChange={setIsCreateContactOpen}>
-        <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto`}>
-          <CreateContactForm
-            onSave={handleCreateContact}
-            onClose={() => setIsCreateContactOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
-
-      {/* Модальное окно создания экстренного контакта */}
-      <Dialog open={isCreateEmergencyContactOpen} onOpenChange={setIsCreateEmergencyContactOpen}>
-        <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto`}>
-          <CreateContactForm
-            onSave={handleCreateEmergencyContact}
-            onClose={() => setIsCreateEmergencyContactOpen(false)}
+      <Dialog open={isMopedDetailOpen} onOpenChange={(open) => {
+        setIsMopedDetailOpen(open)
+        if (!open) {
+          setViewingMopedModal(null)
+        }
+      }}>
+        <DialogContent className={`${isMobile ? 'w-[100vw] h-[100vh] max-h-[100vh] m-0 rounded-none' : 'sm:max-w-[500px]'} max-h-[85vh] overflow-y-auto scrollbar-hide`} hideClose>
+          <MopedDetailView
+            moped={viewingMopedModal}
+            onSave={viewingMopedModal ? handleSaveMopedFromModal : handleCreateMoped}
+            onClose={() => {
+              setIsMopedDetailOpen(false)
+              setViewingMopedModal(null)
+            }}
           />
         </DialogContent>
       </Dialog>
@@ -1301,18 +1281,19 @@ function ContactDetailView({
   onSave,
   onClose,
 }: {
-  contact: Contact
-  onSave: (contact: Contact) => void
+  contact: Contact | null
+  onSave: (contact: Contact | Omit<Contact, "id" | "createdAt">) => void
   onClose: () => void
 }) {
+  const isNew = !contact
   const [formData, setFormData] = React.useState({
-    name: contact.name,
-    phone: contact.phone,
-    email: contact.email || "",
-    photo: (contact as any).photo || "",
-    iin: contact.iin || "",
-    docNumber: contact.docNumber || "",
-    status: (contact.status || "active") as "active" | "inactive" | "blocked",
+    name: contact?.name || "",
+    phone: contact?.phone || "",
+    email: contact?.email || "",
+    photo: (contact as any)?.photo || "",
+    iin: contact?.iin || "",
+    docNumber: contact?.docNumber || "",
+    status: (contact?.status || "active") as "active" | "inactive" | "blocked",
   })
   const [isEditingImage, setIsEditingImage] = React.useState(false)
   const [imageUrl, setImageUrl] = React.useState((contact as any).photo || "")
@@ -1324,17 +1305,29 @@ function ContactDetailView({
   }
 
   const handleSave = () => {
-    const updatedContact: Contact = {
-      ...contact,
-      name: formData.name,
-      phone: formData.phone,
-      email: formData.email,
-      iin: formData.iin,
-      docNumber: formData.docNumber,
-      status: formData.status,
-      photo: formData.photo,
-    } as Contact
-    onSave(updatedContact)
+    if (isNew) {
+      onSave({
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email || null,
+        iin: formData.iin || null,
+        docNumber: formData.docNumber || null,
+        status: formData.status,
+        photo: formData.photo || null,
+      })
+    } else {
+      const updatedContact: Contact = {
+        ...contact,
+        name: formData.name,
+        phone: formData.phone,
+        email: formData.email,
+        iin: formData.iin,
+        docNumber: formData.docNumber,
+        status: formData.status,
+        photo: formData.photo,
+      } as Contact
+      onSave(updatedContact)
+    }
   }
 
   return (
@@ -1418,7 +1411,7 @@ function ContactDetailView({
           Закрыть
         </Button>
         <Button onClick={handleSave} disabled={!formData.name || !formData.phone}>
-          Сохранить изменения
+          {isNew ? "Создать" : "Сохранить изменения"}
         </Button>
       </div>
     </div>
@@ -1430,16 +1423,17 @@ function MopedDetailView({
   onSave,
   onClose,
 }: {
-  moped: Moped
-  onSave: (moped: Moped) => void
+  moped: Moped | null
+  onSave: (moped: Moped | Omit<Moped, "id" | "createdAt">) => void
   onClose: () => void
 }) {
+  const isNew = !moped
   const [formData, setFormData] = React.useState({
-    brand: moped.brand,
-    model: moped.model,
-    licensePlate: moped.licensePlate,
-    photo: moped.photo || "",
-    status: (moped.status || "available") as "available" | "rented" | "maintenance",
+    brand: moped?.brand || "",
+    model: moped?.model || "",
+    licensePlate: moped?.licensePlate || "",
+    photo: moped?.photo || "",
+    status: (moped?.status || "available") as "available" | "rented" | "maintenance",
   })
 
   const STATUS_LABELS = {
@@ -1449,15 +1443,25 @@ function MopedDetailView({
   }
 
   const handleSave = () => {
-    const updatedMoped: Moped = {
-      ...moped,
-      brand: formData.brand,
-      model: formData.model,
-      licensePlate: formData.licensePlate,
-      photo: formData.photo,
-      status: formData.status,
+    if (isNew) {
+      onSave({
+        brand: formData.brand,
+        model: formData.model,
+        licensePlate: formData.licensePlate,
+        photo: formData.photo,
+        status: formData.status,
+      })
+    } else {
+      const updatedMoped: Moped = {
+        ...moped,
+        brand: formData.brand,
+        model: formData.model,
+        licensePlate: formData.licensePlate,
+        photo: formData.photo,
+        status: formData.status,
+      }
+      onSave(updatedMoped)
     }
-    onSave(updatedMoped)
   }
 
   return (
